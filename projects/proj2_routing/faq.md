@@ -39,3 +39,49 @@ This highlights a common pitfall: only ever replacing a route with a lower-cost 
 handle\_link\_up tells you that you have a new link, which port it's connected to, and what its latency is. It doesn't tell you anything about what's on the other side of the link.
 
 A HostDiscoveryPacket tells you that if you send out of that port, you'll reach a host that can be identified using the address in packet.src. If it weren't for HostDiscoveryPackets, you wouldn't know how to refer to a host.
+
+### Can a host be connected to multiple routers? ([@565](https://piazza.com/class/iq6sgotn6pp37f?cid=565))
+
+Yes.
+
+The default host type will send one packet to each connected router. Ideally a host would choose the best gateway, but these ones don't. Our tests will be aware of this, of course.
+
+### Should direct routes to hosts expire? ([@471](https://piazza.com/class/iq6sgotn6pp37f?cid=471), [@604](https://piazza.com/class/iq6sgotn6pp37f?cid=604))
+
+No, don't expire routes based on HostDiscoveryPackets, because these packets will not be resent.
+
+### Do we need to remember a direct route to a host even if there is a shorter indirect route? ([@599](https://piazza.com/class/iq6sgotn6pp37f?cid=599), [@616](https://piazza.com/class/iq6sgotn6pp37f?cid=616))
+
+Yes.
+
+The principle is that after any failure, your routing algorithm should eventually be able to re-establish connectivity between any two nodes that actually are connected.
+
+In this case, if the shorter indirect route fails, you should eventually fall back to the direct route. This means you have to remember direct routes to hosts, even if they aren't the best route.
+
+### What is an example of count-to-infinity?
+
+Consider the following topology, where unlabeled edges have cost 1. Suppose poison mode is on. We'll fail the a-b link and walk through the sequence of events.
+
+```
+    H
+    |
+    a
+    |
+    b
+   / \ 1.5
+  c - d
+```
+
+1. Initially c can reach H via b for cost 3.
+2. When the a-b link fails, b sends poison to c and d.
+3. The order of events is such that c accepts the poison, but then receives an advertisement from d for its old path of cost 3.5. Therefore c now thinks it can reach H via d for cost 4.5.
+4. c advertises this route to b, so b now thinks it can reach H via c for cost 5.5.
+5. b advertises this route to d, so d now thinks it can reach H via b for cost 7.
+6. d advertises this route to c, so c now thinks it can reach H via d for cost 8.
+7. c advertises this route to b, so b now thinks it can reach H via c for cost 9.
+8. b advertises this route to d, so d now thinks it can reach H via b for cost 10.5.
+9. d advertises this route to c, so c now thinks it can reach H via d for cost 11.5.
+10. c advertises this route to b, so b now thinks it can reach H via c for cost 12.5.
+11. b advertises this route to d, so d now thinks it can reach H via b for cost 14.
+12. d advertises this route to c, so c now thinks it can reach H via d for cost 15.
+13. c advertises this route to b. The cost for b to reach H via c is now 16, so b knows it has no route to H. This breaks the cycle.
