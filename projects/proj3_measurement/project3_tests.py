@@ -13,6 +13,7 @@ def ping_format_check(output):
             if type(rtt) != float:
                 raise Exception("expected float type for each RTT value")
 
+#pass
 def rtt_part_a_check(text):
     output = json.loads(text)
     ping_format_check(output)
@@ -30,6 +31,7 @@ def rtt_part_a_check(text):
 
     print "RTT part a PASS"
 
+#pass
 def rtt_part_b_check(text):
     output = json.loads(text)
     ping_format_check(output)
@@ -87,7 +89,7 @@ def tr_single_run_check(output, sites):
             continue
         path_check(data)
 
-
+#pass
 def tr_part_a_check(text):
     sites = ["google.com", "facebook.com", "www.berkeley.edu", "allspice.lcs.mit.edu", "todayhumor.co.kr", "www.city.kobe.lg.jp", "www.vutbr.cz", "zanvarsity.ac.tz"]
 
@@ -102,7 +104,8 @@ def tr_part_a_check(text):
         tr_single_run_check(output, sites)
 
     print "Traceroute part a PASS"
-                    
+
+#pass     
 def tr_part_b_check(text):
     sites = ["tpr-route-server.saix.net", "route-server.ip-plus.net", "route-views.oregon-ix.net", "route-server.eastern.allstream.com"]
     
@@ -118,6 +121,7 @@ def tr_part_b_check(text):
 
     print "Traceroute part b PASS"
 
+#
 def dns_check(text):
     output = json.loads(text)
     if len(output) != 500:
